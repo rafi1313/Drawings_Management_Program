@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnect {
-    final static String url = "jdbc:mysql://localhost/task_manager";
+    final static String url = "jdbc:mysql://localhost/dmp";
     final static String uid = "root";
     final static String pwd = "SqlAccount!23";
     private Connection con = null;
