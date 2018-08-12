@@ -14,9 +14,9 @@
 
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" spacing="10.0" style="-fx-background-color: #343434;" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.LoginController">
     <children>
-      <Accordion style="-fx-background-color: #343434;">
+      <Accordion fx:id="accordionLogin" style="-fx-background-color: #343434;">
         <panes>
-          <TitledPane animated="false" text="ZALOGUJ">
+          <TitledPane fx:id="titledPaneLogin" animated="false" text="ZALOGUJ">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="376.0" prefWidth="598.0" style="-fx-background-color: #343434;">
                      <children>
@@ -26,13 +26,8 @@
                               </font>
                           </Label>
                           <Separator layoutX="2.0" layoutY="62.0" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="5.0" prefWidth="600.0" />
-                          <Label alignment="CENTER" layoutX="271.0" layoutY="67.0" maxWidth="1.7976931348623157E308" text="login">
-                              <font>
-                                  <Font name="System Bold" size="24.0" />
-                              </font>
-                          </Label>
                           <TextField fx:id="tf_login" layoutX="100.0" layoutY="106.0" prefHeight="25.0" prefWidth="400.0" promptText="Podaj login" style="-fx-background-color: #EFEFEF;" />
-                          <Label alignment="CENTER" layoutX="269.0" layoutY="142.0" maxWidth="1.7976931348623157E308" text="hasło">
+                          <Label alignment="CENTER" layoutX="269.0" layoutY="142.0" maxWidth="1.7976931348623157E308" text="hasło" textFill="#cccccc">
                               <font>
                                   <Font name="System Bold" size="24.0" />
                               </font>
@@ -43,16 +38,21 @@
                                   <PasswordField fx:id="pf_password" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="400.0" promptText="Podaj hasło" style="-fx-background-color: #EFEFEF;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children>
                           </AnchorPane>
-                          <CheckBox fx:id="cb_show" graphicTextGap="10.0" layoutX="100.0" layoutY="251.0" mnemonicParsing="false" text="pokaż hasło" textFill="#efefef" textOverrun="CLIP">
+                          <CheckBox fx:id="cb_show" graphicTextGap="10.0" layoutX="100.0" layoutY="251.0" mnemonicParsing="false" onMouseClicked="#showPasswordAction" text="pokaż hasło" textFill="#efefef" textOverrun="CLIP">
                               <font>
                                   <Font size="16.0" />
                               </font>
                           </CheckBox>
-                          <Button fx:id="btn_login" layoutX="354.0" layoutY="241.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" prefWidth="146.0" style="-fx-background-color: yellow;" text="ZALOGUJ">
+                          <Button fx:id="btn_login" layoutX="354.0" layoutY="241.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onMouseClicked="#loginAction" prefHeight="44.0" prefWidth="146.0" style="-fx-background-color: yellow;" text="ZALOGUJ">
                            <font>
                               <Font name="System Bold" size="20.0" />
                            </font>
                           </Button>
+                          <Label alignment="CENTER" layoutX="271.0" layoutY="67.0" maxWidth="1.7976931348623157E308" text="login" textFill="#cccccc">
+                              <font>
+                                  <Font name="System Bold" size="24.0" />
+                              </font>
+                          </Label>
                      </children>
                   </AnchorPane>
             </content>
@@ -83,7 +83,7 @@
                         </Label>
                         <PasswordField fx:id="reg_pf_password1" layoutX="100.0" layoutY="173.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="400.0" promptText="Podaj hasło" style="-fx-background-color: #EFEFEF;" />
                         <PasswordField fx:id="reg_pf_password2" layoutX="100.0" layoutY="214.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="400.0" promptText="Powtórz hasło" style="-fx-background-color: #EFEFEF;" />
-                        <Button fx:id="btn_login1" layoutX="343.0" layoutY="253.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" style="-fx-background-color: yellow;" text="ZAREJESTRUJ">
+                        <Button fx:id="btn_register" contentDisplay="CENTER" layoutX="343.0" layoutY="253.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onMouseClicked="#registerAction" style="-fx-background-color: yellow;" text="ZAREJESTRUJ" textAlignment="CENTER">
                            <font>
                               <Font name="System Bold" size="20.0" />
                            </font>
