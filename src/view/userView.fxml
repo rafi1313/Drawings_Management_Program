@@ -150,6 +150,7 @@
                               </Label>
                               <TextField fx:id="tf_project_find" prefHeight="25.0" prefWidth="231.0" promptText="Wyszukiwanie" />
                               <Button fx:id="btn_project_find" alignment="CENTER" mnemonicParsing="false" onMouseClicked="#projectFindAction" prefHeight="25.0" prefWidth="252.0" text="WYSZUKAJ" />
+                              <Button fx:id="btn_project_find_delete" alignment="CENTER" mnemonicParsing="false" onMouseClicked="#projectFindDeleteAction" prefHeight="25.0" prefWidth="252.0" text="ANULUJ WYSZUKANIE" />
                               <Separator prefHeight="21.0" prefWidth="250.0" />
                               <VBox prefHeight="150.0" prefWidth="250.0" visible="false">
                                  <children>
@@ -234,6 +235,7 @@
                               </Label>
                               <TextField fx:id="tf_drawing_find" prefHeight="25.0" prefWidth="231.0" promptText="Wyszukiwanie" />
                               <Button fx:id="btn_drawing_find" alignment="CENTER" mnemonicParsing="false" onMouseClicked="#drawingFindAction" prefHeight="25.0" prefWidth="252.0" text="WYSZUKAJ" />
+                              <Button fx:id="btn_drawing_find_delete" alignment="CENTER" mnemonicParsing="false" onMouseClicked="#drawingFindDeleteAction" prefHeight="25.0" prefWidth="252.0" text="ANULUJ WYSZUKANIE" />
                               <Separator prefHeight="21.0" prefWidth="250.0" />
                               <VBox prefHeight="150.0" prefWidth="250.0" visible="false">
                                  <children>
