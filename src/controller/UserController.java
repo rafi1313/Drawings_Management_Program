@@ -4,6 +4,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.Button;
@@ -14,8 +17,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 import model.Client;
 import model.Drawing;
 import model.Project;
@@ -23,6 +28,7 @@ import service.DBConnect;
 import service.DialogWindow;
 
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -40,6 +46,7 @@ public class UserController {
     private static int currentProjectId =0;
     private static int projectToEditId=0;
     //obiekty globalne
+    SingleSelectionModel<Tab> selectedTab;
     private DBConnect db;
     private PreparedStatement ps;
     private ObservableList<Client> clientsList = FXCollections.observableArrayList();
@@ -59,6 +66,7 @@ public class UserController {
     private MenuItem m_author;
     @FXML
     private TabPane tabPane;
+
 
     @FXML
     private Tab tab_clients;
@@ -278,6 +286,7 @@ public class UserController {
     void backToClientsAction(MouseEvent event) throws SQLException {
         tab_clients.setDisable(false);
         tab_projects.setDisable(true);
+        tabPane.getSelectionModel().select(tab_clients);
         setClients("%");
     }
 
@@ -285,6 +294,7 @@ public class UserController {
     void backToProjectsAction(MouseEvent event) throws SQLException {
         tab_projects.setDisable(false);
         tab_drawings.setDisable(true);
+        tabPane.getSelectionModel().select(tab_projects);
     }
 
     @FXML
@@ -397,15 +407,21 @@ public class UserController {
     void goToDrawingsAction(MouseEvent event) {
         tab_projects.setDisable(true);
         tab_drawings.setDisable(false);
+        tabPane.getSelectionModel().select(tab_drawings);
     }
 
     @FXML
     void goToProjectsAction(MouseEvent event) throws SQLException {
         try{
             currentProjectId = tbl_clients.getSelectionModel().getSelectedItem().getId();
+
             tab_clients.setDisable(true);
             tab_projects.setDisable(false);
             setProjects("%",currentProjectId);
+            tabPane.getSelectionModel().select(tab_projects);
+//            tabPane.setSelectionModel(selectedTab);
+//            tabPane.getSelectionModel().selectNext();
+
 
         }catch (NullPointerException e){
             DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR,
@@ -417,21 +433,40 @@ public class UserController {
 
     @FXML
     void menuAbout(ActionEvent event) {
-
+        DialogWindow dw = new DialogWindow(Alert.AlertType.INFORMATION,
+                "INFO",
+                "About",
+                "Drawings Management Program:\nPomysł i wykonanie: Rafał Borkowski\nhttps://github.com/rafi1313");
     }
 
     @FXML
     void menuAuthor(ActionEvent event) {
 
+
+        DialogWindow dw = new DialogWindow(Alert.AlertType.INFORMATION,
+                "INFO",
+                "Autor",
+                "Rafał Borkowski\nhttps://github.com/rafi1313");
     }
 
     @FXML
     void menuClose(ActionEvent event) {
-
+        Stage currenstage = (Stage) tabPane.getScene().getWindow();
+        currenstage.close();
     }
 
     @FXML
-    void menuLogout(ActionEvent event) {
+    void menuLogout(ActionEvent event) throws IOException {
+        Stage currenstage = (Stage) tabPane.getScene().getWindow();
+        currenstage.close();
+        Parent root = FXMLLoader.load(getClass().getResource("/view/loginView.fxml"));
+        Scene scene = new Scene(root);
+        Stage primaryStage = new Stage();
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Drawings Management Program");
+        Image icon = new Image(getClass().getResourceAsStream("/resources/dmpIcon.png"));
+        primaryStage.getIcons().add(icon);
+        primaryStage.show();
 
     }
 
@@ -501,7 +536,7 @@ public class UserController {
 
     }
     private void saveProject() throws SQLException {
-
+            String projectDeadline;
         if (tf_project_name.getText().trim().isEmpty()){
             DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR, "BŁĄD", "Błąd dodawania projektu", "Musisz podać nazwę projektu!");
         }else if (dp_project_date.getValue()==null){
@@ -510,7 +545,12 @@ public class UserController {
             String projectName = tf_project_name.getText();
             String projectRate = tf_project_rate.getText();
             String projectDate = dp_project_date.getValue().toString();
-            String projectDeadline = dp_project_deadline.getValue().toString();
+            if (dp_project_deadline.getValue()==null){
+                projectDeadline="";
+            }else {
+                projectDeadline = dp_project_deadline.getValue().toString();
+            }
+
 
             db = new DBConnect();
             Connection connection = db.getCon();
