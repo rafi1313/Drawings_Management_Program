@@ -82,24 +82,26 @@ public class LoginController {
         Stage currenstage = (Stage) btn_login.getScene().getWindow();
         DBConnect dbConnect = new DBConnect();
         Connection connection = dbConnect.getCon();
-        PreparedStatement ps = connection.prepareStatement("SELECT id_Users, login_Users, pass_Users, access from users where login_Users=? AND pass_Users=?");
+        PreparedStatement preparedStatement = connection.prepareStatement("SELECT id_Users, login_Users, pass_Users, access from users where login_Users=? AND pass_Users=?");
         //        id_Users, login_Users, pass_Users, access
-        ps.setString(1, login);
-        ps.setString(2, password);
-        ResultSet resultSet = ps.executeQuery();
+        preparedStatement.setString(1, login);
+        preparedStatement.setString(2, password);
+        ResultSet rs = preparedStatement.executeQuery();
         String permission = "1";
-        if (resultSet.next()) {
+        if (rs.next()) {
             System.out.println("Zalogowano");
-            permission = resultSet.getString("access");
-            userId = resultSet.getInt("id_Users");
+            permission = rs.getString("access");
+            userId = rs.getInt("id_Users");
         }
+
         if (permission.equals("USER")) {
-            Parent root = FXMLLoader.load(getClass().getResource("/view/userView.fxml"));
-            Scene scene = new Scene(root);
+
+            Parent userView = FXMLLoader.load(getClass().getResource("/view/userView.fxml"));
+            Scene scene = new Scene(userView);
             Stage userStage = new Stage();
             userStage.setScene(scene);
             userStage.setTitle("Panel użytkownika");
-            Image icon = new Image(getClass().getResourceAsStream("../resources/dmpIcon.png"));
+            Image icon = new Image(getClass().getResourceAsStream("/resources/dmpIcon.png"));
             userStage.getIcons().add(icon);
             userStage.show();
             currenstage.close();
@@ -109,7 +111,7 @@ public class LoginController {
             Stage userStage = new Stage();
             userStage.setScene(scene);
             userStage.setTitle("Panel użytkownika");
-            Image icon = new Image(getClass().getResourceAsStream("../resources/dmpIcon.png"));
+            Image icon = new Image(getClass().getResourceAsStream("/resources/dmpIcon.png"));
             userStage.getIcons().add(icon);
             userStage.show();
             currenstage.close();
@@ -126,7 +128,7 @@ public class LoginController {
         DBConnect dbConnect = new DBConnect();
         Connection connection = dbConnect.getCon();
         // sprawdzenie dostępności loginu
-        PreparedStatement ps = connection.prepareStatement("SELECT login_Users FROM users WHERE login_Users=?");
+        PreparedStatement ps = connection.prepareStatement("SELECT login_users FROM users WHERE login_users=?");
         ps.setString(1, reg_tf_login.getText());
         ResultSet resultSet = ps.executeQuery();
         if (resultSet.isBeforeFirst()) {
@@ -135,7 +137,7 @@ public class LoginController {
                     "Błąd",
                     "Wystąpił błąd rejestracji",
                     "Podany login jest zajęty. Użyj innego i spróbuj ponownie.");
-        } else if (reg_pf_password1 != reg_pf_password2) {
+        } else if (!reg_pf_password1.getText().equals(reg_pf_password2.getText())) {
             System.out.println("Różne hasła!");
             DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR,
                     "Błąd",

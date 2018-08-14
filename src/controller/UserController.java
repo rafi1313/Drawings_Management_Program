@@ -48,6 +48,7 @@ public class UserController {
     private static int customerToEditId = 0;
     private static int currentProjectId = 0;
     private static int projectToEditId = 0;
+    private static int drawingToEditId = 0;
     //obiekty globalne
     SingleSelectionModel<Tab> selectedTab;
     private DBConnect db;
@@ -280,6 +281,11 @@ public class UserController {
         tab_clients.setDisable(false);
         tab_projects.setDisable(true);
         tabPane.getSelectionModel().select(tab_clients);
+        tf_project_name.clear();
+        tf_project_rate.clear();
+        dp_project_date.setValue(null);
+        dp_project_deadline.setValue(null);
+        anchor_add_project.setDisable(true);
         setClients("%");
     }
 
@@ -287,7 +293,15 @@ public class UserController {
     void backToProjectsAction(MouseEvent event) throws SQLException {
         tab_projects.setDisable(false);
         tab_drawings.setDisable(true);
+        tf_drawing_name.clear();
+        tf_drawing_num.clear();
+        tf_drawing_rate.clear();
+        tf_drawing_width.clear();
+        tf_drawing_height.clear();
+        combo_drawing_paid.setValue(null);
+        anchor_add_drawing.setDisable(true);
         tabPane.getSelectionModel().select(tab_projects);
+        setProjects("%", currentClientId);
     }
 
     @FXML
@@ -303,13 +317,14 @@ public class UserController {
     }
 
     @FXML
-    void drawingFindAction(MouseEvent event) {
-
+    void drawingFindAction(MouseEvent event) throws SQLException {
+        setDrawings(tf_drawing_find.getText(), currentProjectId);
     }
 
     @FXML
-    void drawingFindDeleteAction(MouseEvent event) {
-
+    void drawingFindDeleteAction(MouseEvent event) throws SQLException {
+        setDrawings("%", currentProjectId);
+        tf_drawing_find.clear();
     }
 
     private void editClient(int customerToEditId) throws SQLException {
@@ -354,7 +369,7 @@ public class UserController {
             db = new DBConnect();
             Connection connection = db.getCon();
             String query = "SELECT id_customers, customers_name, first_name, last_name, phone_number, email FROM customers" +
-                    " where (id_Users=" + userId + " AND id_customers=" + customerToEditId + ")";
+                    " WHERE (id_Users=" + userId + " AND id_customers=" + customerToEditId + ")";
             ps = connection.prepareStatement(query);
             ResultSet resultSet = ps.executeQuery();
             resultSet.first();
@@ -373,8 +388,81 @@ public class UserController {
     }
 
     @FXML
-    void editDrawingAction(MouseEvent event) {
+    void editDrawingAction(MouseEvent event) throws SQLException {
+        saveDrawingButtonMode = "EDIT";
+        try {
+            drawingToEditId = tbl_drawings.getSelectionModel().getSelectedItem().getId_drawings();
+            db = new DBConnect();
+            Connection connection = db.getCon();
+//            id_drawings, drawing_name, drawing_num, width, height, individual_rate, id_projects, paid, id_Users
+            String query = "SELECT id_drawings, drawing_name, drawing_num, width, height, individual_rate, paid from drawings WHERE (id_drawings=" + drawingToEditId + ")";
+            ps = connection.prepareStatement(query);
+            ResultSet resultSet = ps.executeQuery();
+            resultSet.first();
+            tf_drawing_name.setText(resultSet.getString("drawing_name"));
+            tf_drawing_num.setText(resultSet.getString("drawing_num"));
+            tf_drawing_rate.setText(Integer.toString(resultSet.getInt("individual_rate")));
+            tf_drawing_width.setText(Integer.toString(resultSet.getInt("width")));
+            tf_drawing_height.setText(Integer.toString(resultSet.getInt("height")));
+            combo_drawing_paid.setValue(resultSet.getInt("paid") == 0 ? "NIE" : "TAK");
+            anchor_add_drawing.setDisable(false);
+        } catch (NullPointerException e) {
+            DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR,
+                    "BŁĄD",
+                    "Błąd danych",
+                    "Musisz wybrać rysunek z listy do edycji!");
+        }
 
+    }
+
+    private void editDrawing(int drawingId) throws SQLException {
+        String regex = "\\d+";
+        if (tf_drawing_name.getText().trim().isEmpty()) {
+            DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR, "BŁĄD", "Błąd edycji rysunku", "Musisz podać nazwę rysunku!");
+        } else if (!tf_drawing_rate.getText().matches(regex)) {
+            DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR, "BŁĄD", "Błąd edycji rysunku", "Podana stawka rysunku nie jest liczbą!\nDla nieznanej stawki wpisz '0'.");
+        } else if (!tf_drawing_width.getText().matches(regex)) {
+            DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR, "BŁĄD", "Błąd edycji rysunku", "Podana szerokość rysunku nie jest liczbą!\nDla nieznanej szerokości wpisz '0'.");
+        } else if (!tf_drawing_height.getText().matches(regex)) {
+            DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR, "BŁĄD", "Błąd edycji rysunku", "Podana wysokość rysunku nie jest liczbą!\nDla nieznanej wysokości wpisz '0'.");
+        } else if (combo_drawing_paid.getValue()==null) {
+            DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR, "BŁĄD", "Błąd edycji rysunku", "Nie wybrano stanu rozliczenia rysunku!");
+        } else {
+            String drawingName = tf_drawing_name.getText();
+            String drawingNum = tf_drawing_num.getText();
+            int width = Integer.parseInt(tf_drawing_width.getText());
+            int height = Integer.parseInt(tf_drawing_height.getText());
+            int rate = Integer.parseInt(tf_drawing_rate.getText());
+            String paidString = combo_drawing_paid.getValue();
+            int paid;
+            if (paidString.equals("NIE")) {
+                paid = 0;
+            } else {
+                paid = 1;
+            }
+            db = new DBConnect();
+            Connection connection = db.getCon();
+//            id_drawings, drawing_name, drawing_num, width, height, individual_rate, id_projects, paid, id_Users
+            ps = connection.prepareStatement("UPDATE drawings SET drawing_name=?, drawing_num=?, width=?, height=?, individual_rate=?, paid=? WHERE (id_drawings=?)");
+            ps.setString(1, drawingName);
+            ps.setString(2, drawingNum);
+            ps.setInt(3, width);
+            ps.setInt(4, height);
+            ps.setInt(5, rate);
+            ps.setInt(6, paid);
+            ps.setInt(7, drawingToEditId);
+            ps.executeUpdate();
+            tf_drawing_name.clear();
+            tf_drawing_num.clear();
+            tf_drawing_rate.clear();
+            tf_drawing_width.clear();
+            tf_drawing_height.clear();
+            combo_drawing_paid.setValue(null);
+            anchor_add_drawing.setDisable(true);
+            setDrawings("%", currentProjectId);
+
+
+        }
     }
 
     private void editProject(int projectId) throws SQLException {
@@ -451,13 +539,13 @@ public class UserController {
 
     @FXML
     void goToDrawingsAction(MouseEvent event) throws SQLException {
-        try{
+        try {
             currentProjectId = tbl_projects.getSelectionModel().getSelectedItem().getId();
             tab_projects.setDisable(true);
             tab_drawings.setDisable(false);
             setDrawings("%", currentProjectId);
             tabPane.getSelectionModel().select(tab_drawings);
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR,
                     "BŁĄD",
                     "Błąd danych",
@@ -577,19 +665,20 @@ public class UserController {
         }
 
     }
-    private void saveDrawing()throws SQLException{
+
+    private void saveDrawing() throws SQLException {
         String regex = "\\d+";
-        if (tf_drawing_name.getText().trim().isEmpty()){
+        if (tf_drawing_name.getText().trim().isEmpty()) {
             DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR, "BŁĄD", "Błąd dodawania rysunku", "Musisz podać nazwę rysunku!");
-        }else if (!tf_drawing_rate.getText().matches(regex)){
+        } else if (!tf_drawing_rate.getText().matches(regex)) {
             DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR, "BŁĄD", "Błąd dodawania rysunku", "Podana stawka rysunku nie jest liczbą!\nDla nieznanej stawki wpisz '0'.");
-        }else if (!tf_drawing_width.getText().matches(regex)){
+        } else if (!tf_drawing_width.getText().matches(regex)) {
             DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR, "BŁĄD", "Błąd dodawania rysunku", "Podana szerokość rysunku nie jest liczbą!\nDla nieznanej szerokości wpisz '0'.");
-        }else if (!tf_drawing_height.getText().matches(regex)){
+        } else if (!tf_drawing_height.getText().matches(regex)) {
             DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR, "BŁĄD", "Błąd dodawania rysunku", "Podana wysokość rysunku nie jest liczbą!\nDla nieznanej wysokości wpisz '0'.");
-        }else if (combo_drawing_paid.getValue().isEmpty()){
+        } else if (combo_drawing_paid.getValue()==null) {
             DialogWindow dw = new DialogWindow(Alert.AlertType.ERROR, "BŁĄD", "Błąd dodawania rysunku", "Nie wybrano stanu rozliczenia rysunku!");
-        }else{
+        } else {
             String drawingName = tf_drawing_name.getText();
             String drawingNum = tf_drawing_num.getText();
             int width = Integer.parseInt(tf_drawing_width.getText());
@@ -597,16 +686,15 @@ public class UserController {
             int rate = Integer.parseInt(tf_drawing_rate.getText());
             String paidString = combo_drawing_paid.getValue();
             int paid;
-            if (paidString.equals("NIE")){
-                paid=0;
-            }else {
-                paid=1;
+            if (paidString.equals("NIE")) {
+                paid = 0;
+            } else {
+                paid = 1;
             }
             db = new DBConnect();
             Connection connection = db.getCon();
 //            id_drawings, drawing_name, drawing_num, width, height, individual_rate, id_projects, paid, id_Users
-            ps = connection.prepareStatement("INSERT INTO projects " +
-                    "(drawing_name, drawing_num, width, height, individual_rate, id_projects, paid, id_Users) " +
+            ps = connection.prepareStatement("INSERT INTO drawings (drawing_name, drawing_num, width, height, individual_rate, id_projects, paid, id_Users) " +
                     "VALUES (?,?,?,?,?,?,?,?)");
             ps.setString(1, drawingName);
             ps.setString(2, drawingNum);
@@ -617,9 +705,14 @@ public class UserController {
             ps.setInt(7, paid);
             ps.setInt(8, userId);
             ps.executeUpdate();
-
-            setDrawings("%", currentProjectId);
+            tf_drawing_name.clear();
+            tf_drawing_num.clear();
+            tf_drawing_rate.clear();
+            tf_drawing_width.clear();
+            tf_drawing_height.clear();
+            combo_drawing_paid.setValue(null);
             anchor_add_drawing.setDisable(true);
+            setDrawings("%", currentProjectId);
         }
     }
 
@@ -628,9 +721,10 @@ public class UserController {
         if (saveDrawingButtonMode.equals("SAVE")) {
             saveDrawing();
         } else {
-            editProject(currentProjectId);
+            editDrawing(projectToEditId);
         }
     }
+
 
     @FXML
     void saveProjectAction(MouseEvent event) throws SQLException {
@@ -679,16 +773,14 @@ public class UserController {
             tf_project_rate.clear();
             dp_project_date.setValue(null);
             dp_project_deadline.setValue(null);
-
-            setProjects("%", currentClientId);
             anchor_add_project.setDisable(true);
-
+            setProjects("%", currentClientId);
         }
     }
 
     public void initialize() throws SQLException {
         setClients("%");
-        ObservableList<String> comboOptions = FXCollections.observableArrayList("TAK","NIE");
+        ObservableList<String> comboOptions = FXCollections.observableArrayList("TAK", "NIE");
         combo_drawing_paid.setItems(comboOptions);
     }
 
@@ -766,12 +858,12 @@ public class UserController {
             int width = resultSet.getInt("width");
             int height = resultSet.getInt("height");
             int individual_rate = resultSet.getInt("individual_rate");
-            int paid01= resultSet.getInt("paid");
+            int paid01 = resultSet.getInt("paid");
             String paidString;
-            if (paid01==0){
-                paidString="NIE";
-            }else {
-                paidString="TAK";
+            if (paid01 == 0) {
+                paidString = "NIE";
+            } else {
+                paidString = "TAK";
             }
             drawing.setId_drawings(id_drawings);
             drawing.setDrawing_name(drawing_name);
@@ -780,8 +872,6 @@ public class UserController {
             drawing.setHeight(height);
             drawing.setIndividual_rate(individual_rate);
             drawing.setPaid(paidString);
-
-
             drawingsList.add(drawing);
         }
         col_drawing_id.setCellValueFactory(new PropertyValueFactory<Drawing, Integer>("id_drawings"));
