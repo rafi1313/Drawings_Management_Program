@@ -1,4 +1,4 @@
 /.idea/*
 /out/*
+!/out/artifacts/Drawings_Management_Program_jar/Drawings_Management_Program.jar
 *.iml
-!Drawings_Management_Program.jar
